@@ -12,10 +12,9 @@ def read_securities():
     return {"hello world": security.get_securities(rdb.get_securities)}
 
 
-@app.get("/profit-forecast")
-def read_profit_forecast():
-    t = rim.get_profit_forecast(rdb.get_profit_forecast)
-    return {"profit forecast": rim.get_profit_forecast(rdb.get_profit_forecast)}
+@app.get("/profit-forecast/")
+def read_profit_forecast(code: str):
+    return {f"{code} profit forecast": rim.get_profit_forecast(code, rdb.get_profit_forecast)}
 
 
 if __name__ == "__main__":
