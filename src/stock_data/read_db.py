@@ -16,9 +16,15 @@ def get_profit_forecast(today: str):
         .drop('index', axis=1)
 
 
+@lru_cache(maxsize=1)
+def get_indicator2018(today: str):
+    assert today is not None    # 这个参数是为了cache需要，只要在一个日子中，就不需要重复从数据库拿数据
+    return pd.read_sql('indicator2018', con=sqlalchemy.create_engine('sqlite:///../../data/ts.db'))\
+        .set_index('ts_code')\
+        .drop('index', axis=1)
+
+
 if __name__ == "__main__":
     test_today = '2020-02-11'
-    df = get_profit_forecast(test_today)
-    df1 = get_profit_forecast(test_today)
+    df = get_indicator2018(test_today)
     print(df)
-    print(df1)

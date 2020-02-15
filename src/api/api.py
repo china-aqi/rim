@@ -33,5 +33,10 @@ def read_profit_forecast(code: str):
     return {f"{code} profit forecast": rim.get_profit_forecast(code, rdb.get_profit_forecast)}
 
 
+@app.get("/financial-indicator/")
+def read_indicator2018(code: str):
+    return {f"{code} 2018 financial indicator": rim.get_indicator2018(code, rdb.get_indicator2018)}
+
+
 if __name__ == "__main__":
     uvicorn.run(app, host="127.0.0.1", port=8000)
