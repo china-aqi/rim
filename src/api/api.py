@@ -1,5 +1,8 @@
+from typing import List
+
 import uvicorn
 from fastapi import FastAPI
+from pydantic import BaseModel
 from starlette.middleware.cors import CORSMiddleware
 
 from src.stock_data import read_db as rdb
@@ -7,6 +10,7 @@ from src.business import security, rim
 
 app = FastAPI()
 
+# 允许跨域
 origins = [
     "http://localhost.tiangolo.com",
     "https://localhost.tiangolo.com",
@@ -14,6 +18,7 @@ origins = [
     "http://localhost:8001",
 ]
 
+# 允许跨域
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
@@ -36,6 +41,26 @@ def read_profit_forecast(code: str):
 @app.get("/financial-indicator/")
 def read_indicator2018(code: str):
     return {f"{code} 2018 financial indicator": rim.get_indicator2018(code, rdb.get_indicator2018)}
+
+
+class RE(BaseModel):
+    rr: float                       # required return, 必要投资报酬率 / 折现率
+    gr: float                       # growth rate，持续期的剩余收益增长率
+    value: float                    # 对企业的剩余收益估值
+    discounted_re2019: float        # 折现后的2019年剩余收益
+    discounted_re2020: float        # 折现后的2020年剩余收益
+    discounted_re2021: float        # 折现后的2021年剩余收益
+    discounted_cv: float            # # 折现后的持续期剩余收益
+
+
+class RIMValue(BaseModel):
+    bps2018: float                  # 2018年每股净资产
+    re: List[RE]                    # 不同假设下的剩余收益
+
+
+@app.get("/rim-value/", response_model=RIMValue)
+def read_rim_value(code: str):
+    return rim.calculate_rim_value(code)
 
 
 if __name__ == "__main__":
