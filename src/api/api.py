@@ -55,6 +55,8 @@ class RE(BaseModel):
 
 class RIMValue(BaseModel):
     bps2018: float                  # 2018年每股净资产
+    rr: List[float]
+    gr: List[float]
     re: List[RE]                    # 不同假设下的剩余收益
 
 

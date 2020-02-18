@@ -68,12 +68,16 @@ def calculate_rim_value(code: str) -> dict:
     profit_forecast = get_profit_forecast(code)
     indicator2018 = get_indicator2018(code)
 
-    rr_gr_lst = product([0.08, 0.09, 0.10, 0.11, 0.12], [0.0, 0.02, 0.04])
+    rr_lst: List[float] = [0.08, 0.09, 0.10, 0.11, 0.12]
+    gr_lst: List[float] = [0.0, 0.02, 0.04]
+    rr_gr_lst = product(rr_lst, gr_lst)
     rim_values = [cal_rim_value(rr, gr)for rr, gr in rr_gr_lst]
 
     return {
         'bps2018': indicator2018['bps'],
-        're': rim_values
+        're': rim_values,
+        'rr': rr_lst,
+        'gr': gr_lst
     }
 
 
