@@ -1,4 +1,4 @@
-from typing import Callable, List
+from typing import Callable, List, Tuple, Iterator, Dict, Optional
 import datetime
 from itertools import product
 
@@ -81,5 +81,12 @@ def calculate_rim_value(code: str) -> dict:
     }
 
 
+def _is_valid_code(code: str) -> bool:
+    assert len(code) == 6
+    assert code.isdigit()
+    assert code[0] in ['6', '3', '0']
+    return True
+
+
 if __name__ == "__main__":
-    print(calculate_rim_value('000625'))
+    pass

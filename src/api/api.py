@@ -6,7 +6,7 @@ from pydantic import BaseModel
 from starlette.middleware.cors import CORSMiddleware
 
 from src.stock_data import read_db as rdb
-from src.business import security, rim
+from src.business import security, rim, profit_ability
 
 app = FastAPI()
 
@@ -15,7 +15,7 @@ origins = [
     "http://localhost.tiangolo.com",
     "https://localhost.tiangolo.com",
     "http://localhost",
-    "http://localhost:8001",
+    "http://localhost:8080",
 ]
 
 # 允许跨域
@@ -65,5 +65,15 @@ def read_rim_value(code: str):
     return rim.calculate_rim_value(code)
 
 
+@app.get("/profitability/8yr-roe/")
+def read_years_roe(code: str):
+    return profit_ability.calculate_yrs_roe(code)
+
+
+@app.get("/profitability/8yr-mg")
+def read_years_roe(code: str):
+    return profit_ability.get_8yrs_mg(code)
+
+
 if __name__ == "__main__":
-    uvicorn.run(app, host="127.0.0.1", port=8000)
+    uvicorn.run(app, host="127.0.0.1", port=8001)
