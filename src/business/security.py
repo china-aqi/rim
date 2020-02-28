@@ -2,7 +2,7 @@ from typing import List, Tuple, Callable
 
 import pandas as pd
 
-from src.stock_data import read_db as rdb
+from src.stock_data import rim_db as rdb
 
 
 def get_securities(getter: Callable[[], pd.DataFrame]) -> List[Tuple[str, str, str]]:

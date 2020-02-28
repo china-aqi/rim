@@ -5,7 +5,7 @@ from fastapi import FastAPI
 from pydantic import BaseModel
 from starlette.middleware.cors import CORSMiddleware
 
-from src.stock_data import read_db as rdb
+from src.stock_data import rim_db as rdb
 from src.business import security, rim, profit_ability
 
 app = FastAPI()
@@ -70,9 +70,18 @@ def read_years_roe(code: str):
     return profit_ability.calculate_yrs_roe(code)
 
 
-@app.get("/profitability/8yr-mg")
+class MGMSValue(BaseModel):
+    code: str
+    mm: int                 # maximum margin, MM = max(mg rank, ms rank)，最大盈利能力指标
+    mg: float               # margin growth, MG = (II(1 + ΔGM / GM)) ^ 1/T - 1，盈利能力成长性指标
+    mg_rank: int            # rank of mg, 盈利能力成长性在全市场的百分位
+    ms: float               # margin stability, MS = AVG(GM) / STD(GM), 盈利能力稳定性指标
+    ms_rank: int            # rank of ms, 盈利能力稳定性在全市场的百分位
+
+
+@app.get("/profitability/mg-ms", response_model=MGMSValue)
 def read_years_roe(code: str):
-    return profit_ability.get_8yrs_mg(code)
+    return profit_ability.get_mg_ms(code)
 
 
 if __name__ == "__main__":

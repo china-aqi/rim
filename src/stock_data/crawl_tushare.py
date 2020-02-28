@@ -8,9 +8,15 @@ import sqlalchemy
 import tushare as ts
 
 from src import config
-from src.stock_data import read_db
+from src.stock_data import rim_db
 
 ts.set_token(config.ts_token)
+
+
+def get_securities():
+    pro = ts.pro_api()
+    # 查询当前所有正常上市交易的股票列表
+    return pro.stock_basic(exchange='', list_status='L', fields='ts_code,symbol,name,area,industry,list_date')
 
 
 def tushare_indicator_to_db(index: int, codes: List[str]) -> NoReturn:
@@ -57,7 +63,7 @@ def task_scheduler() -> NoReturn:
 
     today = datetime.datetime.now()
     today = today.strftime("%Y-%m-%d")
-    financial_indicators = read_db.get_financial_indicator(today)
+    financial_indicators = rim_db.get_financial_indicator(today)
     code_set = financial_indicators.index
     done_code_year_set = set(zip(code_set.get_level_values(0), code_set.get_level_values(1)))
 

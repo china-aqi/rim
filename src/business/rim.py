@@ -4,7 +4,7 @@ from itertools import product
 
 import pandas as pd
 
-from src.stock_data import read_db as rdb
+from src.stock_data import rim_db as rdb
 
 
 def get_profit_forecast(code: str,
