@@ -55,6 +55,27 @@ def get_financial_indicator(today: str = _today()) -> pd.DataFrame:
         .set_index(['ts_code', 'end_date'])
 
 
+@lru_cache(maxsize=1)
+def get_ts_statement(name: str, today: str = _today()) -> pd.DataFrame:
+    """
+    get the statement from ts.db
+
+    Parameters
+    ----------
+    name: str
+        statement name, for example, 'balancesheet'
+    today : str
+        today这个参数是为了cache需要，只要在一个日子中，就不需要重复从数据库拿数据
+
+    Returns
+    -------
+    table : DataFrame
+    """
+    return pd.read_sql(f'SELECT * FROM {name}',
+                       con=sqlalchemy.create_engine('sqlite:///../../data/ts.db'))\
+        .set_index(['ts_code', 'end_date'])
+
+
 def get_financial_indicator_by_code(code: str) -> pd.DataFrame:
     """ 获取某个公司最近数年的财务指标
     输入假设：

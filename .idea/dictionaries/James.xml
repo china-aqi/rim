@@ -2,9 +2,16 @@
   <dictionary name="James">
     <words>
       <w>alexnet</w>
+      <w>balancesheet</w>
+      <w>dataframe</w>
+      <w>gmean</w>
+      <w>grossprofit</w>
       <w>lenet</w>
+      <w>profitforecast</w>
+      <w>quantiles</w>
       <w>resnet</w>
       <w>todos</w>
+      <w>tushare</w>
     </words>
   </dictionary>
 </component>
