@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Tuple
 
 import uvicorn
 from fastapi import FastAPI
@@ -82,6 +82,23 @@ class MGMSValue(BaseModel):
 @app.get("/profitability/mg-ms", response_model=MGMSValue)
 def read_years_roe(code: str):
     return profit_ability.get_mg_ms(code)
+
+
+class RIMProposal(BaseModel):
+    code: str
+    capital_return_rate_range: Tuple[float, float] = (0.07, 0.13)
+    capital_return_rate_default: float = 0.10
+    cost_of_equity_capital: float = 0.09
+    analysis_eps: List[Tuple[str, float]] = [('2019', 1.1), ('2020', 1.3), ('2021', 1.4)]
+    g1_range: Tuple[float, float] = (0.00, 0.50)
+    bps: Tuple[str, float] = ('2018', 8.12)
+    industry_roe: float = 0.12
+    g2_range: Tuple[float, float] = (0.00, 0.04)
+
+
+@app.get("/v1.0/rim-proposal", response_model=RIMProposal)
+def read_rim_proposal(code: str):
+    return {'code': code}
 
 
 if __name__ == "__main__":
