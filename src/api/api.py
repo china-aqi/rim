@@ -88,12 +88,15 @@ class RIMProposal(BaseModel):
     code: str
     capital_return_rate_range: Tuple[float, float] = (0.07, 0.13)
     capital_return_rate_default: float = 0.10
-    cost_of_equity_capital: float = 0.09
     analysis_eps: List[Tuple[str, float]] = [('2019', 1.1), ('2020', 1.3), ('2021', 1.4)]
-    g1_range: Tuple[float, float] = (0.00, 0.50)
+    t1_range: Tuple[int, int] = (5, 7)
+    t1_t2: int = 12
+    g1_range: Tuple[float, float] = (0.00, 0.60)
+    g1_default: float = 0.10
     bps: Tuple[str, float] = ('2018', 8.12)
     industry_roe: float = 0.12
     g2_range: Tuple[float, float] = (0.00, 0.04)
+    g2_default: float = 0.02
 
 
 @app.get("/v1.0/rim-proposal", response_model=RIMProposal)
