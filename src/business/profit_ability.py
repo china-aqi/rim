@@ -9,7 +9,7 @@ from toolz import pipe, juxt, compose
 import pandas as pd
 
 from src.stock_data import rim_db as rdb
-from src.stock_data import crawl_tushare as cts
+# from src.stock_data import crawl_tushare as cts
 
 
 def _convert_to_ts_code(code: str) -> str:
