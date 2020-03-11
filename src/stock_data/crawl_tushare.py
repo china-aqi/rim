@@ -25,7 +25,7 @@ def tushare_indicator_to_db(index: int, codes: List[str]) -> NoReturn:
     print(f"第{index}批次 {datetime.datetime.now()}")
     for code in codes:
         print(f"{code}")
-        indicator: pd.DataFrame = pro.fina_indicator(ts_code=code, period='20181231', fields='ts_code, eps, bps')
+        indicator: pd.DataFrame = ts.pro_api().fina_indicator(ts_code=code, period='20181231', fields='ts_code, eps, bps')
         if indicator.empty is False:
             indicators.append(indicator.iloc[0].to_dict())
     pd.DataFrame(indicators).to_sql('indicator2018', con=sqlalchemy.create_engine('sqlite:///../../data/ts.db'),
@@ -87,7 +87,7 @@ def download_and_save_statement(code_year_lst: List[Tuple[str, str]], statement_
     NoReturn
     """
     assert code_year_lst is not None
-    assert statement_name == 'balancesheet'
+    assert statement_name == 'balancesheet' or statement_name == 'income'
     assert all([isinstance(index, int) and isinstance(code_year, tuple) for index, code_year in code_year_lst])
 
     statements: List[dict] = []
@@ -101,40 +101,61 @@ def download_and_save_statement(code_year_lst: List[Tuple[str, str]], statement_
     print("Save to DB")
 
 
-def task_scheduler2() -> NoReturn:
+def task_scheduler2(name: str, start: int, end: int) -> NoReturn:
     s = sched.scheduler(time.time, time.sleep)
-    balancesheet = rim_db.get_ts_statement('balancesheet')
-    code_year = balancesheet.index
-    completion_of_code_year = set(zip(code_year.get_level_values(0), code_year.get_level_values(1)))
+    statements = rim_db.get_ts_statement(name)
+    if statements is not None:
+        code_year = statements.index
+        completion_of_code_year = set(zip(code_year.get_level_values(0), code_year.get_level_values(1)))
+    else:
+        completion_of_code_year = set()
 
     code_year_set = pipe(ts.pro_api().stock_basic(exchange='', list_status='L', fields='ts_code'),
                          lambda x: [t.ts_code for t in x.itertuples()],  # 枚举当前可用的公司代码
-                         lambda x: set(product(x, [f"{y}1231" for y in range(2017, 2020)])))  # 构造 tuple (code, year)
+                         lambda x: set(product(x, [f"{y}1231" for y in range(start, end)])))  # 构造 tuple (code, year)
 
     undo_code_year_set = code_year_set - completion_of_code_year
 
     tasks = pipe(undo_code_year_set,
                  lambda x: zip(count(), x),
-                 lambda x: groupby(x, key=lambda y: y[0] // 36),  # 分组，便于限流
-                 lambda x: [s.enter(i * 30, 1, download_and_save_statement,  # 每分钟安排36个下载任务
+                 lambda x: groupby(x, key=lambda y: y[0] // 35),  # 分组，便于限流
+                 lambda x: [s.enter(i * 30, 1, download_and_save_statement,  # 每分钟安排35个下载任务
                                     kwargs={'code_year_lst': [j for j in jobs]}) for i, jobs in x])
-
-    # c = list(code_year_set)
-    #
-    # today = datetime.datetime.now()
-    # today = today.strftime("%Y-%m-%d")
-    # financial_indicators = rim_db.get_financial_indicator(today)
-    # code_set = financial_indicators.index
-    # done_code_year_set = set(zip(code_set.get_level_values(0), code_set.get_level_values(1)))
-    #
-    # to_do_set = code_year_set - done_code_year_set
-    # to_do_with_index = zip(to_do_set, count())
-    #
-    # job_groups = groupby(to_do_with_index, key=lambda x: x[1]//36)      # 每30秒查询-保存36条记录
-    # for i, jobs in job_groups:
-    #     s.enter(i * 30, 1, save_ts_indicator_to_db, kwargs={'code_year_lst': [j for j in jobs]})
     s.run()
 
 
+def task_scheduler3(name: str, start: int, end: int) -> NoReturn:
+    statements = rim_db.get_ts_statement(name)
+    if statements is not None:
+        code_year = statements.index
+        completion_of_code_year = set(zip(code_year.get_level_values(0), code_year.get_level_values(1)))
+    else:
+        completion_of_code_year = set()
+
+    code_year_set = pipe(ts.pro_api().stock_basic(exchange='', list_status='L', fields='ts_code'),
+                         lambda x: [t.ts_code for t in x.itertuples()],  # 枚举当前可用的公司代码
+                         lambda x: set(product(x, [f"{y}1231" for y in range(start, end)])))  # 构造 tuple (code, year)
+
+    undo_code_year_set = code_year_set - completion_of_code_year
+
+    counter = 1
+    start_time = time.time()
+    for code, end_date in undo_code_year_set:
+        print(f"code is {code}, end date is {end_date}")
+        if counter >= 75:
+            counter = 1
+            delta = time.time() - start_time
+            start_time = time.time()
+            if delta < 61:
+                time.sleep(71 - delta)
+        else:
+            counter = counter + 1
+
+        statement: pd.DataFrame = ts.pro_api().query(name, ts_code=code, period=end_date).set_index(['ts_code',
+                                                                                                     'end_date'])
+        if not statement.empty:
+            statement.to_sql(name, con=sqlalchemy.create_engine('sqlite:///../../data/ts.db'), if_exists='append')
+
+
 if __name__ == '__main__':
-    task_scheduler2()
+    task_scheduler3('income', 2016, 2020)

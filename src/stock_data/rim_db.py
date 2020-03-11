@@ -1,8 +1,9 @@
 from functools import lru_cache
 import datetime
-from typing import Tuple, List
+from typing import Tuple, List, Optional
 
 import sqlalchemy
+from sqlalchemy import exc
 import pandas as pd
 
 
@@ -56,7 +57,7 @@ def get_financial_indicator(today: str = _today()) -> pd.DataFrame:
 
 
 @lru_cache(maxsize=1)
-def get_ts_statement(name: str, today: str = _today()) -> pd.DataFrame:
+def get_ts_statement(name: str, today: str = _today()) -> Optional[pd.DataFrame]:
     """
     get the statement from ts.db
 
@@ -71,9 +72,12 @@ def get_ts_statement(name: str, today: str = _today()) -> pd.DataFrame:
     -------
     table : DataFrame
     """
-    return pd.read_sql(f'SELECT * FROM {name}',
-                       con=sqlalchemy.create_engine('sqlite:///../../data/ts.db'))\
-        .set_index(['ts_code', 'end_date'])
+    try:
+        df = pd.read_sql(f'SELECT * FROM {name}', con=sqlalchemy.create_engine('sqlite:///../../data/ts.db')) \
+            .set_index(['ts_code', 'end_date'])
+    except exc.OperationalError as e:
+        df = None
+    return df
 
 
 def get_financial_indicator_by_code(code: str) -> pd.DataFrame:

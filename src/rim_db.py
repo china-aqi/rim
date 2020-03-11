@@ -7,7 +7,7 @@ import pandas as pd
 
 
 def get_securities():
-    return pd.read_sql('securities', con=sqlalchemy.create_engine('sqlite:///../../data/jq.db'))
+    return pd.read_sql('securities', con=sqlalchemy.create_engine('sqlite:///../data/jq.db'))
 
 
 @lru_cache(maxsize=1)
