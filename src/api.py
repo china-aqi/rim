@@ -1,4 +1,4 @@
-from typing import List, Tuple
+from typing import List, Tuple, Optional
 
 import uvicorn
 from fastapi import FastAPI
@@ -7,6 +7,7 @@ from starlette.middleware.cors import CORSMiddleware
 
 import rim_db as rdb
 import security
+import rim
 #from src.business import security, rim, profit_ability
 
 app = FastAPI()
@@ -89,12 +90,13 @@ class RIMProposal(BaseModel):
     code: str
     capital_return_rate_range: Tuple[float, float] = (0.07, 0.13)
     capital_return_rate_default: float = 0.10
-    analysis_eps: List[Tuple[str, float]] = [('2019', 1.1), ('2020', 1.3), ('2021', 1.4)]
+    analysis_eps: List[Tuple[str, Optional[float]]] = [('2019', 1.1), ('2020', 1.3), ('2021', 1.4)]
     t1_range: Tuple[int, int] = (5, 7)
     t1_t2: int = 12
     g1_range: Tuple[float, float] = (0.00, 0.60)
     g1_default: float = 0.10
-    bps: Tuple[str, float] = ('2018', 8.12)
+    last_bps: Tuple[str, float] = ('2018', 8.12)
+    last_eps: Tuple[str, float] = ('2018', 1.0)
     industry_roe: float = 0.12
     g2_range: Tuple[float, float] = (0.00, 0.04)
     g2_default: float = 0.02
@@ -102,9 +104,10 @@ class RIMProposal(BaseModel):
 
 @app.get("/v1.0/rim-proposal", response_model=RIMProposal)
 def read_rim_proposal(code: str):
-    return {'code': code}
+    p = rim.build_rim_proposal(code)
+    return {'code': code, 'analysis_eps': [('2019', p.eps_2019), ('2020', p.eps_2020), ('2021 ', p.eps_2021)]}
 
 
 if __name__ == "__main__":
     # uvicorn.run(app, host="127.0.0.1", port=8001)
-    uvicorn.run(app, host="172 .19.217.132", port=80)
+    uvicorn.run(app, host="172.19.217.132", port=80)

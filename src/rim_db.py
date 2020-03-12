@@ -13,17 +13,18 @@ def get_securities():
 @lru_cache(maxsize=1)
 def get_profit_forecast(today: str):
     assert today is not None    # 这个参数是为了cache需要，只要在一个日子中，就不需要重复从数据库拿数据
-    df = pd.read_sql('profit_forecast', con=sqlalchemy.create_engine('sqlite:///../../data/em1.db'))\
+    df = pd.read_sql('profit_forecast', con=sqlalchemy.create_engine('sqlite:///../data/em1.db'))\
         .set_index('code')\
         .drop('index', axis=1)
     return df[['eps_2019', 'eps_2020', 'eps_2021']].apply(pd.to_numeric, errors='coerce', downcast='float')
 
 
 @lru_cache(maxsize=1)
-def get_indicator2018(today: str):
-    assert today is not None    # 这个参数是为了cache需要，只要在一个日子中，就不需要重复从数据库拿数据
-    return pd.read_sql('indicator2018', con=sqlalchemy.create_engine('sqlite:///../../data/ts.db'))\
-        .set_index('ts_code')\
+def get_indicator(year: str = '2018'):
+    assert year == '2018'
+    indicator: pd.DataFrame = pd.read_sql('indicator2018', con=sqlalchemy.create_engine('sqlite:///../data/ts.db'))
+    indicator['ts_code'] = indicator['ts_code'].map(lambda x: x[:6])
+    return indicator.set_index('ts_code')\
         .drop('index', axis=1)
 
 
