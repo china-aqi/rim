@@ -23,7 +23,7 @@ origins = [
 # 允许跨域
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,
+    allow_origins=['*'],    # allow all other web servers CORS
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
