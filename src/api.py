@@ -105,7 +105,9 @@ class RIMProposal(BaseModel):
 @app.get("/v1.0/rim-proposal", response_model=RIMProposal)
 def read_rim_proposal(code: str):
     p = rim.build_rim_proposal(code)
-    return {'code': code, 'analysis_eps': [('2019', p.eps_2019), ('2020', p.eps_2020), ('2021 ', p.eps_2021)]}
+    return {'code': code, 'industry_roe': p.industry_roe,
+            'analysis_eps': [('2019', p.eps_2019), ('2020', p.eps_2020), ('2021 ', p.eps_2021)],
+            'last_bps': ('2018', p.bps_2018), 'last_eps': ('2018', p.eps_2018)}
 
 
 if __name__ == "__main__":
