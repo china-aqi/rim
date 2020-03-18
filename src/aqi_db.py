@@ -1,6 +1,7 @@
 from functools import lru_cache
 import datetime
-from typing import Tuple, List, Callable, NoReturn
+from typing import Tuple, List, Callable, NamedTuple
+from collections import namedtuple
 
 import sqlalchemy
 import pandas as pd
@@ -157,6 +158,42 @@ def get_sw_industry() -> Callable[[str], str]:
     return lambda code: df.loc[_to_jq_code(code)]['sw_l2']
 
 
+def get_company_info() -> Callable[[str], NamedTuple]:
+    """ 获取上市公司的基本信息
+
+    Precondition
+    =====================================================================================================
+    ../data/jq.db 存在
+    jq.db中存在'company_info'表，其内容同 https://www.joinquant.com/help/api/help?name=JQData#上市公司基本信息
+
+    Post condition
+    ====================================================================================================
+    :return: 闭包函数
+                输入参数是上市公司代码，输出是上市公司信息
+    """
+    df = pd.read_sql_table('company_info', con=sqlalchemy.create_engine('sqlite:///../data/jq.db'))
+    df = df.set_index('code')[['website', 'province', 'city', 'industry_1', 'industry_2', 'main_business']]
+    return lambda code: namedtuple('CompanyInfo', df.loc[_to_jq_code(code)].index)(*df.loc[_to_jq_code(code)])
+
+
+def get_market_value() -> Callable[[str], NamedTuple]:
+    """ 获取上市公司的最近交易日的市值和相关信息
+
+    Precondition
+    =====================================================================================================
+    ../data/jq.db 存在
+    jq.db中存在'market_value'表，其内容同 https://www.joinquant.com/help/api/help?name=JQData#市值数据（每日更新）
+
+    Post condition
+    ====================================================================================================
+    :return: 闭包函数
+                输入参数是上市公司代码，输出是上市公司最近交易日的市值和相关信息
+    """
+    df = pd.read_sql_table('market_value', con=sqlalchemy.create_engine('sqlite:///../data/jq.db'))
+    df = df.set_index('code')[['market_cap', 'pe_ratio', 'pb_ratio', 'ps_ratio', 'pcf_ratio']]
+    return lambda code: namedtuple('market_value', df.loc[_to_jq_code(code)].index)(*df.loc[_to_jq_code(code)])
+
+
 def _to_jq_code(code: str) -> str:
     """ 上市公司代码转换为jq风格
     """
@@ -164,7 +201,7 @@ def _to_jq_code(code: str) -> str:
 
 
 if __name__ == "__main__":
-    fn = get_sw_industry()
+    fn = get_market_value()
     print(fn('000625'))
 
 

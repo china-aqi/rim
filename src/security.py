@@ -2,7 +2,7 @@ from typing import List, Tuple, Callable
 
 import pandas as pd
 
-import rim_db as rdb
+import aqi_db as rdb
 
 
 def get_securities(getter: Callable[[], pd.DataFrame]) -> List[Tuple[str, str, str]]:

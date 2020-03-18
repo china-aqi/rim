@@ -5,7 +5,7 @@ from collections import namedtuple
 import pandas as pd
 import numpy as np
 
-import rim_db
+import aqi_db
 
 
 RimProposal = namedtuple('RimProposal', ['code', 'bps_2018', 'eps_2018', 'industry_roe',
@@ -46,10 +46,10 @@ def _is_A_list_company_symbol(code: str) -> bool:
 
 @lru_cache(maxsize=4096)
 def build_rim_proposal(code: str,
-                       get_indicator: Callable[[str], pd.DataFrame] = rim_db.get_indicator,
-                       get_eps_forecast: Callable[[str], pd.DataFrame] = rim_db.get_profit_forecast,
-                       fn_sw2_code: Callable[[str], str] = rim_db.get_sw_industry(),
-                       fn_industry_roe: Callable[[str], Tuple[str, str, float]] = rim_db.get_sw_industry_roe()) \
+                       get_indicator: Callable[[str], pd.DataFrame] = aqi_db.get_indicator,
+                       get_eps_forecast: Callable[[str], pd.DataFrame] = aqi_db.get_profit_forecast,
+                       fn_sw2_code: Callable[[str], str] = aqi_db.get_sw_industry(),
+                       fn_industry_roe: Callable[[str], Tuple[str, str, float]] = aqi_db.get_sw_industry_roe()) \
         -> NamedTuple:
     """ 构建用于计算RIM的建议数据
 

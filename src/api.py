@@ -5,10 +5,10 @@ from fastapi import FastAPI
 from pydantic import BaseModel
 from starlette.middleware.cors import CORSMiddleware
 
-import rim_db as rdb
+import aqi_db as adb
 import security
 import rim
-#from src.business import security, rim, profit_ability
+
 
 app = FastAPI()
 
@@ -32,17 +32,17 @@ app.add_middleware(
 
 @app.get("/securities")
 def read_securities():
-    return {"hello world": security.get_securities(rdb.get_securities)}
+    return {"hello world": security.get_securities(adb.get_securities)}
 
 
 @app.get("/profit-forecast/")
 def read_profit_forecast(code: str):
-    return {f"{code} profit forecast": rim.get_profit_forecast(code, rdb.get_profit_forecast)}
+    return {f"{code} profit forecast": rim.get_profit_forecast(code, adb.get_profit_forecast)}
 
 
 @app.get("/financial-indicator/")
 def read_indicator2018(code: str):
-    return {f"{code} 2018 financial indicator": rim.get_indicator2018(code, rdb.get_indicator2018)}
+    return {f"{code} 2018 financial indicator": rim.get_indicator2018(code, adb.get_indicator2018)}
 
 
 class RE(BaseModel):
@@ -112,16 +112,23 @@ def read_rim_proposal(code: str):
 
 class PublicCompanyInfo(BaseModel):
     code: str
-    market_value: float = 414.25        # 市值，单位~亿元
-    industry: str = '汽车'              # 行业
-    main_business: str = '汽车'         # 主营业务
-    registered_place: str = '重庆'      # 注册地
-    history: List[str] = ['1998年公司上市', '2018年更名为 世界第一']                 # 上市历史
+    market_value: float                 # 市值，单位~亿元
+    industry: str                       # 行业
+    main_business: str                  # 主营业务
+    registered_place: str               # 注册地
+    history: List[str] = ['To Do', ]                 # 上市历史
 
 
 @app.get("/v1.0/a_public_company_info", response_model=PublicCompanyInfo)
 def read_a_public_company_info(code: str):
-    return {'code': code, }
+    market_value = adb.get_market_value()(code)
+    company_info = adb.get_company_info()(code)
+    return {'code': code,
+            'market_value': market_value.market_cap,
+            'industry': company_info.industry_1 + '/' + company_info.industry_2,
+            'main_business': company_info.main_business,
+            'registered_place': company_info.province + '/' + company_info.city
+                if company_info.province not in ['重庆', '上海', '北京', '天津'] else company_info.province}
 
 
 if __name__ == "__main__":
