@@ -110,6 +110,20 @@ def read_rim_proposal(code: str):
             'last_bps': ('2018', p.bps_2018), 'last_eps': ('2018', p.eps_2018)}
 
 
+class PublicCompanyInfo(BaseModel):
+    code: str
+    market_value: float = 414.25        # 市值，单位~亿元
+    industry: str = '汽车'              # 行业
+    main_business: str = '汽车'         # 主营业务
+    registered_place: str = '重庆'      # 注册地
+    history: List[str] = ['1998年公司上市', '2018年更名为 世界第一']                 # 上市历史
+
+
+@app.get("/v1.0/a_public_company_info", response_model=PublicCompanyInfo)
+def read_a_public_company_info(code: str):
+    return {'code': code, }
+
+
 if __name__ == "__main__":
-    # uvicorn.run(app, host="127.0.0.1", port=8001)
-    uvicorn.run(app, host="172.19.217.132", port=80)
+    uvicorn.run(app, host="127.0.0.1", port=8001)
+    # uvicorn.run(app, host="172.19.217.132", port=80)
