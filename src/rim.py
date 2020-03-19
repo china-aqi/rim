@@ -41,7 +41,7 @@ def _is_A_list_company_symbol(code: str) -> bool:
     assert isinstance(code, str)
     return code.isdigit() \
            and len(code) == 6 \
-           and code[:3] in ('000', '002', '300', '600', '601', '603', '608')
+           and code[:3] in ('000', '002', '300', '600', '601', '603', '608', '688')
 
 
 @lru_cache(maxsize=4096)

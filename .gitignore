@@ -112,6 +112,3 @@ src/config.py
 # executable file
 .exe
 /data/jq.db
-
-# exclude .idea directory
-.idea
